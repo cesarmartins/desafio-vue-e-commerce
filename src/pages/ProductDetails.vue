@@ -38,28 +38,3 @@ onMounted(async () => {
   }
 })
 </script>
-
-<style scoped>
-.product-details {
-  display: flex;
-  gap: 20px;
-  margin-top: 20px;
-}
-.product-details img {
-  max-width: 300px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-}
-.info {
-  flex: 1;
-}
-.price {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #28a745;
-}
-.desc {
-  margin-top: 10px;
-  line-height: 1.4;
-}
-</style>

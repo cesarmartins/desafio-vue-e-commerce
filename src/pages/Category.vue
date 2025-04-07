@@ -27,6 +27,7 @@
 </template>
 
 <script setup>
+import '../assets/css/main.css'
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
@@ -81,25 +82,3 @@ onMounted(async () => {
 })
 </script>
 
-<style scoped>
-.products {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-.product {
-  border: 1px solid #ddd;
-  padding: 10px;
-  max-width: 200px;
-}
-.pagination {
-  margin-top: 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-button[disabled] {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-</style>

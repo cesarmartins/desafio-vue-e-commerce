@@ -1,15 +1,26 @@
 <template>
-  <div id="app">
-    <RouterView />
+  <div class="layout">
+    <Header />
+    <main>
+      <RouterView />
+    </main>
+    <Footer />
   </div>
 </template>
 
 <script setup>
+import Header from './components/layout/Header.vue'
+import Footer from './components/layout/Footer.vue'
 </script>
 
 <style>
-body {
-  font-family: sans-serif;
-  padding: 20px;
+.layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+main {
+  flex: 1;
+  padding: 1rem;
 }
 </style>

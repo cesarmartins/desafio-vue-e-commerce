@@ -33,39 +33,3 @@ toggleFavorite = (product) => {
   store.toggleFavorite(product)
 }
 </script>
-
-<style scoped>
-.favorites-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  margin-top: 20px;
-}
-.favorite-card {
-  border: 1px solid #ccc;
-  padding: 10px;
-  max-width: 200px;
-  border-radius: 8px;
-  text-align: center;
-}
-.favorite-card img {
-  max-width: 100%;
-  border-radius: 4px;
-}
-.price {
-  font-weight: bold;
-  color: green;
-}
-.category {
-  font-size: 0.9rem;
-  color: #666;
-}
-button {
-  margin-top: 10px;
-  background: #ffdddd;
-  border: none;
-  padding: 6px 10px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-</style>
