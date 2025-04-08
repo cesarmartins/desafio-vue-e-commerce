@@ -16,6 +16,7 @@ import { useThemeStore } from '../../stores/themeStore'
 const theme = useThemeStore()
 const toggleDarkMode = () => theme.toggle()
 const isDark = theme.isDark
+console.log(isDark)
 </script>
 
 <style scoped>

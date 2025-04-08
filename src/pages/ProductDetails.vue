@@ -1,40 +1,61 @@
 <template>
-  <div v-if="loading">Carregando produto...</div>
-  <div v-else-if="error">Erro: {{ error }}</div>
-  <div v-else class="product-details">
-    <img :src="product.images[0]" :alt="product.title" />
-    <div class="info">
-      <h1>{{ product.title }}</h1>
-      <p class="price">💲{{ product.price }}</p>
-      <p class="desc">{{ product.description }}</p>
-      <p><strong>Categoria:</strong> {{ product.category.name }}</p>
+  <LayoutWrapper>
+    <div>
+      <button @click="goBack" class="back-button">🔙 Voltar</button>
     </div>
-  </div>
+    <div class="product-details" v-if="product">
+      <img :src="product.images[0]" alt="Imagem do produto" />
+      <div class="info">
+        <h1>{{ product.title }}</h1>
+        <p class="price">💵 {{ product.price }}</p>
+        <p>{{ product.description }}</p>
+        <p><strong>Categoria:</strong> {{ product.category.name }}</p>
+        <button @click="store.toggleFavorite(product)">
+          <span v-if="store.isFavorite(product.id)">💔 Remover dos favoritos</span>
+          <span v-else>💖 Adicionar aos favoritos</span>
+        </button>
+      </div>
+    </div>
+    <div v-else>Carregando...</div>
+  </LayoutWrapper>
 </template>
 
 <script setup>
 import { useProductStore } from '../stores/productStore'
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 
-const route = useRoute()
-const productId = route.params.id
-
-const product = ref(null)
-const loading = ref(true)
-const error = ref(null)
 const store = useProductStore()
+const route = useRoute()
+const router = useRouter()
+const product = ref(null)
+
+function goBack() {
+  router.back()
+}
 
 onMounted(async () => {
-  try {
-    const { data } = await axios.get(`https://api.escuelajs.co/api/v1/products/${productId}`)
-    product.value = data
-    store.addLastVisited(product.value)
-  } catch (err) {
-    error.value = err.message
-  } finally {
-    loading.value = false
-  }
+  const res = await axios.get(
+    `https://api.escuelajs.co/api/v1/products/${route.params.id}`
+  )
+  product.value = res.data
+  store.addLastVisited(res.data)
 })
 </script>
+<style scoped>
+.back-button {
+  background-color: var(--primary-color, #eee);
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  transition: background-color 0.2s;
+}
+
+.back-button:hover {
+  background-color: var(--primary-hover, #ccc);
+}
+</style>

@@ -3,16 +3,6 @@
     <!-- Conteúdo principal com layout em duas colunas -->
     <div class="main-content">
       
-      <!-- Sidebar de categorias -->
-      <aside class="sidebar">
-        <h2 style="padding: 15px 0;border-bottom: 1px solid #ddd;">Categorias</h2>
-        <ul>
-          <li v-for="cat in categories" :key="cat.id" class="category-item">
-            <RouterLink :to="`/category/${cat.name}`">{{ cat.name }}</RouterLink>
-          </li>
-        </ul>
-      </aside>
-
       <!-- Produtos -->
       <section class="product-section">
         <div class="search-bar">
@@ -21,7 +11,18 @@
             placeholder="🔍 Buscar produtos por título..."
           />
         </div>
-
+        <div>
+          <div class="sort-bar">
+            <label for="sort">Ordenar por:</label>
+            <select v-model="sortKey" id="sort">
+              <option value="name">Nome</option>
+              <option value="price">Preço</option>
+            </select>
+            <button @click="toggleSortOrder">
+              {{ sortOrder === 'asc' ? '⬆️ Ascendente' : '⬇️ Descendente' }}
+            </button>
+          </div>
+        </div>
         <div v-if="loading">Carregando produtos...</div>
         <div v-else class="product-grid">
           <ProductCard
@@ -42,25 +43,43 @@
 </template>
 
 <script setup>
+import { useProducts } from '../composables/useProducts'
 import ProductCard from '../components/ProductCard.vue'
 import { useProductStore } from '../stores/productStore'
 import { ref, onMounted, computed, watch } from 'vue'
 import axios from 'axios'
+import '../assets/css/main.css'
+
+// Composable de produtos
+const { products, loading, fetchAllProducts } = useProducts()
 
 const store = useProductStore()
 const { toggleFavorite, isFavorite } = store
 
-const products = ref([])
-const loading = ref(true)
 const search = ref('')
-const categories = ref([])
 const currentPage = ref(1)
 const itemsPerPage = 10
+const sortKey = ref('name');
+const sortOrder = ref('asc');
+
+
+function toggleSortOrder() {
+  sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+}
 
 const filteredProducts = computed(() =>
   products.value.filter(product =>
     product.title.toLowerCase().includes(search.value.toLowerCase())
-  )
+  ).sort((a, b) => {
+    const modifier = sortOrder.value === 'asc' ? 1 : -1
+    if (sortKey.value === 'name') {
+      return a.title.localeCompare(b.title) * modifier
+    } else if (sortKey.value === 'price') {
+      return (a.price - b.price) * modifier
+    }
+    return 0
+  })
+
 )
 
 const paginatedProducts = computed(() => {
@@ -84,13 +103,9 @@ watch(search, () => {
 })
 
 onMounted(async () => {
+
   try {
-    const [productsRes, categoriesRes] = await Promise.all([
-      axios.get('https://api.escuelajs.co/api/v1/products'),
-      axios.get('https://api.escuelajs.co/api/v1/categories')
-    ])
-    products.value = productsRes.data
-    categories.value = categoriesRes.data
+    fetchAllProducts()
   } catch (err) {
     console.error('Erro ao buscar dados', err)
   } finally {
@@ -154,12 +169,6 @@ onMounted(async () => {
   border: 1px solid #ccc;
 }
 
-.product-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 20px;
-}
-
 .pagination {
   display: flex;
   justify-content: center;
@@ -184,6 +193,21 @@ onMounted(async () => {
 .category-item{
   border-bottom: 1px solid #ddd;
   padding: 15px 0;
+}
+
+.sort-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 20px;
+}
+.sort-bar select,
+.sort-bar button {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text-color);
 }
 
 </style>

@@ -8,6 +8,7 @@ export const useProductStore = defineStore('productStore', {
   }),
 
   actions: {
+
     toggleFavorite(product) {
       const exists = this.favorites.find(p => p.id === product.id)
 
@@ -35,6 +36,5 @@ export const useProductStore = defineStore('productStore', {
     }
   },
 
-  // 🧠 ESSENCIAL: habilita persistência de favoritos e lastVisited
   persist: true
 })

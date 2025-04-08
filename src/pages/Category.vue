@@ -1,84 +1,59 @@
 <template>
-  <div>
-    <h1>Produtos da Categoria: {{ categoryName }}</h1>
+  <div class="page-layout">
+    <h2>Categorias - {{ categoryName }}</h2>
 
-    <div v-if="loading">Carregando...</div>
-    <div v-else-if="error">Erro: {{ error }}</div>
-    
-    <div v-else class="products">
-      <div
-        v-for="product in paginatedProducts"
-        :key="product.id"
-        class="product"
-      >
-        <RouterLink :to="`/product/${product.id}`">
-          <img :src="product.images[0]" :alt="product.title" width="100" />
-          <h3>{{ product.title }}</h3>
-          <p>💲{{ product.price }}</p>
-        </RouterLink>
+    <section class="products">
+      <div class="product-grid">
+        <ProductCard
+            v-for="product in products"
+            :key="product.id"
+            :product="product"
+        />
       </div>
-    </div>
-  </div>
-  <div v-if="!loading && products.length" class="pagination">
-    <button @click="prevPage" :disabled="currentPage === 1">⬅ Anterior</button>
-    <span>Página {{ currentPage }} de {{ totalPages }}</span>
-    <button @click="nextPage" :disabled="currentPage === totalPages">Próxima ➡</button>
+    </section>
   </div>
 </template>
 
 <script setup>
-import '../assets/css/main.css'
-import { ref, onMounted, computed } from 'vue'
+import ProductCard from '../components/ProductCard.vue'
+import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import axios from 'axios'
+import { getProductsByCategory, getAllCategories } from '../services/api'
+import '../assets/css/main.css'
 
 const route = useRoute()
-const categoryName = route.params.name
-
+const categoryName = ref(route.params.name)
+const categoryId = ref(null)
 const products = ref([])
 const loading = ref(true)
-const error = ref(null)
-const currentPage = ref(1)
-const itemsPerPage = 10
 
-// Paginação: produtos por página
-const paginatedProducts = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage
-  const end = start + itemsPerPage
-  return products.value.slice(start, end)
-})
-
-const totalPages = computed(() => Math.ceil(products.value.length / itemsPerPage))
-
-function nextPage() {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++
-  }
-}
-
-function prevPage() {
-  if (currentPage.value > 1) {
-    currentPage.value--
-  }
-}
-
-onMounted(async () => {
+async function fetchCategoryIdByName(name) {
   try {
-    const { data: categories } = await axios.get('https://api.escuelajs.co/api/v1/categories')
-    const category = categories.find(cat => cat.name.toLowerCase() === categoryName.toLowerCase())
+    const categories = await getAllCategories()
+    const found = categories.find(cat => cat.name.toLowerCase() === name.toLowerCase())
+    if (!found) throw new Error('Categoria não encontrada')
+    categoryId.value = found.id
+  } catch (err) {
+    console.error('Erro ao buscar categorias:', err)
+  }
+}
 
-    if (!category) {
-      throw new Error('Categoria não encontrada')
-    }
-
-    const { data } = await axios.get(`https://api.escuelajs.co/api/v1/products/?categoryId=${category.id}`)
+async function fetchProducts() {
+  if (!categoryId.value) return
+  loading.value = true
+  try {
+    const data = await getProductsByCategory(categoryId.value)
     products.value = data
   } catch (err) {
-    error.value = err.message
-    console.error(err)
+    console.error('Erro ao buscar produtos:', err)
   } finally {
     loading.value = false
   }
-})
-</script>
+}
 
+watch(() => route.params.name, async (newName) => {
+  categoryName.value = newName
+  await fetchCategoryIdByName(newName)
+  await fetchProducts()
+}, { immediate: true })
+</script>
